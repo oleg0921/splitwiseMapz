@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Add new Group</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+          crossorigin="anonymous">
+</head>
+<body class="d-flex justify-content-center align-items-center text-center">
+<div class="container-sm">
+    <div th:height="130" class="mb-4"></div>
+    <form id="expForm" name="form" th:action="@{/add-group}" method="post">
+        <div class="flex">
+            <p class="text-left">Create new group</p>
+            <label for="title"></label>
+            <input tabindex="1" placeholder="Group name..." autocomplete="off" type="text" name="title"
+                   id="title">
+
+            <button class="btn btn-primary" type="submit">Create</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

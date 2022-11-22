@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Expenses</title>
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+          crossorigin="anonymous">
+</head>
+<body>
+<div class="alert alert-success" role="alert" th:if="${param.paymentCompleted}">
+    Your payment completed!
+</div>
+<div class="alert alert-danger" role="alert" th:if="${param.paymentCanceled}">
+    Your payment canceled!
+    Person don't have money in their wallet.
+</div>
+<nav class="col-12 navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header container-fluid ">
+            <div class="input-group mb-1">
+                <div class="input-group mb-1 justify-content-between">
+                    <form id="expenseForm" name="form" th:action="@{/add-expense(expenseType='INDIVIDUAL')}"
+                          method="get">
+                        <input type="hidden" id="expenseType" name="expenseType" value="INDIVIDUAL"/>
+
+                        <button class="btn btn-primary ">
+                            Add an expense
+                        </button>
+                    </form>
+
+                    <form id="exportForm" name="form" th:action="@{/export}" method="get">
+
+                        <button class="btn btn-info">
+                            Export to excel
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<ul th:each="expense, i : ${expenseList}">
+
+    <li class="list-group-item">
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <div class="list-group">
+                        <label th:text="${expense.title}"></label>
+
+                        <div class="d-flex w-100 align-items-center justify-content-between">
+                            <strong class="mb-1"> <!-- <td th:text="${expense}">1</td>--></strong>
+                            <small th:text="${expense.getAmountInfo()}"></small>
+                        </div>
+
+                        <div class="p-1 col-10 mb-1 small">
+
+                            <label th:text="${'Added by: '+users.get(i.index).getEmail()}"></label>
+                            <label class="small" th:text="${expense.getCreationInfo()}"></label>
+                        </div>
+                        <button class="btn btn-light mb-1"
+                                type="button"
+                                data-toggle="collapse"
+                                th:attr="data-target='#collapseExpense'+${expense.id},
+                                aria-controls='collapseExpense'+${expense.id}"
+                                aria-expanded="false">
+                            Show details
+                        </button>
+
+                        <form th:if="${currentId == expense.targetId}"
+                              th:attr=" id='expense' +${expense.id}"
+                              th:action="@{/dashboard/expenses/pay/{id}(
+                              id = ${expense.id},
+                              creatorId=${expense.getCreatorId()},
+                              targetId=${expense.targetId},
+                              currentAmount=${currentAmount},
+                              transactionAmount=${transactions.get(i.index).get(1).amount.negate()})}"
+                              method="post">
+                            <button th:if="${expense.paid == false}" th:disabled="${currentAmount < transactions.get(i.index).get(0).amount}
+                            or ${accounts.get(expense.getCreatorId()).getMoneyAmount() < transactions.get(i.index).get(1).amount.negate()}"
+                                    class="btn btn-info">
+                                Pay
+
+                            </button>
+                            <button th:if="${expense.paid == true}" th:disabled="${true}"
+                                    class="btn btn-info">
+                                Paid
+                            </button>
+                            <div class="float-right">
+                                <label th:if="${expense.paid == false && currentAmount < transactions.get(i.index).get(1).amount}"
+                                       class="small text-danger" th:text="'Not enough money in your wallet! '"></label>
+                                <label th:if="${expense.paid == false && accounts.get(expense.getCreatorId()).getMoneyAmount() < transactions.get(i.index).get(0).amount}"
+                                       class="small text-danger"
+                                       th:text="'Not enough money in creator wallet! '"></label>
+
+                            </div>
+                        </form>
+                    </div>
+                </h5>
+            </div>
+            <div class="collapse" th:attr="id='collapseExpense'+${expense.id}">
+                <div class="card-body">
+                    <div th:each="trMessage : ${transactionMessages.get(i.index)}">
+                        <label th:text="${trMessage}"> </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </li>
+</ul>
+<div class="nav-item">
+    <form method="get" th:action="@{/dashboard/expense/{currentPage}(currentPage=${currentPage})}">
+        <nav aria-label="Page navigation" class="navbar navbar-expand-lg navbar-light bg-light justify-content-center">
+            <ul class="pagination">
+                <li class="page-item" th:if="${currentPage > 1}">
+                    <a class="page-link"
+                       th:href="@{/dashboard/expenses/{currentPage}(currentPage=${currentPage}-1,
+                            pageSize=${param.pageSize.iterator().next()}, expenses = true)}">Previous</a>
+                </li>
+
+                <ul class="list-group" th:if="${pageCount > 0}"
+                    th:each="pageNumber : ${pageNumbers}">
+                    <a class="page-link"
+                       th:href="@{/dashboard/expenses/{currentPage}(currentPage=${pageNumber},
+                           pageSize=${param.pageSize.iterator().next()}, expenses = true)}"
+                       th:text="${pageNumber}"></a>
+                </ul>
+
+                <li class="page-item" th:if="${pageCount} > (${currentPage})">
+                    <a class="page-link"
+                       th:href="@{/dashboard/expenses/{currentPage}(currentPage=(${currentPage}+1),
+                            pageSize=${param.pageSize.iterator().next()}, expenses = true)}">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </form>
+</div>
+</body>
+</html>
